@@ -66,7 +66,16 @@ public class User {
         }
     }
     
+    /* 
+     * This area will be used for PermissionsManager tools.
+     * Do not add Groups-based methods to this area.
+     */
+    
     public void setPerms(ArrayList<String> perms){
         this.perms = perms;
+    }
+    
+    public void setGroups(ArrayList<String> groups){
+        this.groups = groups;
     }
 }

@@ -64,6 +64,14 @@ public class PermissionsManager {
         Class.forName("org.sqlite.JDBC");
         Connection c = null;
         Connection conn = DriverManager.getConnection("jdbc:sqlite:" + dbLoc);
+        Statement stat = conn.createStatement();
+        stat.executeUpdate(
+                "create table if not exists users (username, maingroup, "
+                + "groups, perms);");
+        stat.executeUpdate(
+                "create table if not exists groups ("
+                + "groupname, parents, children, "
+                + "members, owners, perms);");
         
     }
     
@@ -72,12 +80,35 @@ public class PermissionsManager {
         Connection c = null;
         Connection conn = DriverManager.getConnection("jdbc:sqlite:" + dbLoc);
         Statement stat = conn.createStatement();
-        stat.executeUpdate("create table if not exists people (username, maingroup, groups, perms);");
+        stat.executeUpdate(
+                "create table if not exists users (username, maingroup, "
+                + "groups, perms);");
+        stat.executeUpdate(
+                "create table if not exists groups ("
+                + "groupname, parents, children, "
+                + "members, owners, perms);");
         
         conn.setAutoCommit(true);
         ResultSet rs = stat.executeQuery("select * from users;");
+        ResultSet rs2 = stat.executeQuery("select * from groups");
+        
         User u = new User ();
         ArrayList<String> perms = new ArrayList();
+        
+        Group g = new Group (null, null, null);
+        String[] perms2, members, parents, children;
+        
+        while (rs2.next()){
+            members = rs2.getString("members").split(",");
+            parents = rs2.getString("parents").split(",");
+            children = rs2.getString("children").split(",");
+            perms2 = rs2.getString("perms").split(",");
+            
+            g.addMembers(members);
+            
+            
+        }
+        
         while (rs.next()) {
             
             u.setName(rs.getString("name"));
@@ -88,7 +119,6 @@ public class PermissionsManager {
                 perms.add(permlist[x]);
             }
             u.setPerms(perms);
-            
             users.put(u.getName(), u);
             
             if (groups.containsKey(u.getMainGroup())){
@@ -96,7 +126,11 @@ public class PermissionsManager {
             }
             
             u = null;
+            permlist = null;
+            perms.clear();
         }
+        
+        
         rs.close();
         conn.close();
     }
